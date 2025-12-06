@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frenza - Microblog Platformu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #f5f8fa;
+            color: #14171a;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e1e8ed;
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1da1f2;
+            cursor: pointer;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #1da1f2;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .tweet-box {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .tweet-textarea {
+            width: 100%;
+            min-height: 100px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 16px;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+        
+        .tweet-textarea:focus {
+            outline: none;
+            border-color: #1da1f2;
+        }
+        
+        .tweet-counter {
+            text-align: right;
+            color: #657786;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .tweet-counter.near-limit {
+            color: #ffad1f;
+        }
+        
+        .tweet-counter.over-limit {
+            color: #e0245e;
+        }
+        
+        .tweet-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .daily-limit {
+            background: #f5f8fa;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .daily-limit .remaining {
+            color: #1da1f2;
+            font-weight: bold;
+        }
+        
+        .tweet-button {
+            background: #1da1f2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .tweet-button:hover {
+            background: #1a91da;
+        }
+        
+        .tweet-button:disabled {
+            background: #aab8c2;
+            cursor: not-allowed;
+        }
+        
+        .tweet-list {
+            margin-top: 20px;
+        }
+        
+        .tweet {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .tweet-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .tweet-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #1da1f2;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .tweet-user {
+            font-weight: bold;
+            color: #14171a;
+        }
+        
+        .tweet-time {
+            color: #657786;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+        
+        .tweet-content {
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+        
+        .tweet-actions {
+            display: flex;
+            gap: 30px;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #e1e8ed;
+        }
+        
+        .tweet-action {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #657786;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .tweet-action:hover {
+            color: #1da1f2;
+        }
+        
+        .tweet-action.liked {
+            color: #e0245e;
+        }
+        
+        .expiry-timer {
+            background: #fff8e1;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #ff8f00;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        .expiry-timer.danger {
+            background: #ffebee;
+            color: #e0245e;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #657786;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #e0245e;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        .success-message {
+            background: #e8f5e8;
+            color: #28a745;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 10px 0;
+            }
+        }
+    </style>
+    
+    <!-- Firebase SDK (Zaten var) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">🐦 Frenza</div>
+            <div class="user-menu">
+                <span id="userGreeting"></span>
+                <div class="avatar" id="userAvatar">U</div>
+                <button onclick="logout()" class="tweet-button" style="background: #e0245e;">Çıkış</button>
+            </div>
+        </div>
+        
+        <!-- Tweet Box -->
+        <div class="tweet-box" id="tweetBox">
+            <textarea 
+                class="tweet-textarea" 
+                placeholder="Bugün ne düşünüyorsun? (Max 280 karakter)"
+                maxlength="280"
+                id="tweetInput"
+                oninput="updateCounter()"
+            ></textarea>
+            
+            <div class="tweet-counter" id="charCounter">
+                <span id="charCount">0</span>/280
+            </div>
+            
+            <div class="tweet-info">
+                <div class="daily-limit">
+                    Günlük kalan: <span class="remaining" id="dailyRemaining">5</span>/5 tweet
+                </div>
+                <button class="tweet-button" id="tweetButton" onclick="sendTweet()">
+                    🐦 Tweet Gönder
+                </button>
+            </div>
+            
+            <div class="expiry-timer" id="expiryInfo">
+                ⏳ Bu tweet 30 gün sonra silinecek
+            </div>
+        </div>
+        
+        <!-- Messages -->
+        <div id="messageContainer"></div>
+        
+        <!-- Tweet List -->
+        <div class="tweet-list" id="tweetList">
+            <div class="loading">Tweetler yükleniyor...</div>
+        </div>
+        
+        <!-- Logout Modal -->
+        <div class="modal" id="logoutModal">
+            <div class="modal-content">
+                <h3>Çıkış Yap</h3>
+                <p>Frenza'dan çıkış yapmak istediğinize emin misiniz?</p>
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button class="tweet-button" onclick="confirmLogout()" style="flex: 1;">Evet, Çık</button>
+                    <button class="tweet-button" onclick="closeModal()" style="flex: 1; background: #657786;">İptal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🔥 FIREBASE KONFİGÜRASYONU (Aynı!)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDXbv4aK-PyVvfIcsaDK_wGK2taL7vqwmg",
+            authDomain: "login-77be0.firebaseapp.com",
+            projectId: "login-77be0",
+            storageBucket: "login-77be0.firebasestorage.app",
+            messagingSenderId: "631209373102",
+            appId: "1:631209373102:web:11ba283b57b8d12fc02c3f"
+        };
+
+        // Firebase'i başlat
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // 📊 DEĞİŞKENLER
+        let currentUser = null;
+        let userData = null;
+        let dailyTweetCount = 0;
+
+        // 📱 SAYFA YÜKLENİNCE
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Önce sessionStorage kontrol
+            if (sessionStorage.getItem('userLoggedIn') !== 'true') {
+                // Login sayfasına yönlendir
+                window.location.href = 'https://methehan.github.io/login/';
+                return;
+            }
+
+            // Firebase auth kontrol
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    currentUser = user;
+                    await loadUserData();
+                    await checkDailyLimit();
+                    await loadTweets();
+                    setupRealtimeListener();
+                } else {
+                    // Oturum yok, login sayfasına git
+                    sessionStorage.removeItem('userLoggedIn');
+                    window.location.href = 'https://methehan.github.io/login/';
+                }
+            });
+        });
+
+        // 👤 KULLANICI VERİLERİNİ YÜKLE
+        async function loadUserData() {
+            try {
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                if (userDoc.exists) {
+                    userData = userDoc.data();
+                    
+                    // Kullanıcı arayüzünü güncelle
+                    const firstName = userData.name.split(' ')[0];
+                    document.getElementById('userGreeting').textContent = `Merhaba, ${firstName}!`;
+                    
+                    // Avatar ilk harf
+                    const firstLetter = userData.name.charAt(0).toUpperCase();
+                    document.getElementById('userAvatar').textContent = firstLetter;
+                }
+            } catch (error) {
+                console.error('Kullanıcı verisi yüklenemedi:', error);
+                showMessage('Kullanıcı bilgileri yüklenemedi', 'error');
+            }
+        }
+
+        // 🎯 GÜNLÜK TWEET LİMİTİ KONTROLÜ
+        async function checkDailyLimit() {
+            if (!currentUser) return;
+            
+            const today = new Date().toDateString(); // UTC'ye göre gün
+            
+            try {
+                // Bugün atılan tweet'leri say
+                const tweetsSnapshot = await db.collection('tweets')
+                    .where('userId', '==', currentUser.uid)
+                    .where('createdAt', '>=', new Date(new Date().setHours(0,0,0,0)))
+                    .get();
+                
+                dailyTweetCount = tweetsSnapshot.size;
+                
+                // UI'ı güncelle
+                const remaining = 5 - dailyTweetCount;
+                document.getElementById('dailyRemaining').textContent = remaining;
+                document.getElementById('tweetButton').disabled = remaining <= 0;
+                
+                if (remaining <= 0) {
+                    document.getElementById('expiryInfo').innerHTML = 
+                        '❌ Günlük tweet limitiniz doldu. Yarın tekrar deneyin!';
+                    document.getElementById('expiryInfo').classList.add('danger');
+                }
+            } catch (error) {
+                console.error('Limit kontrolü hatası:', error);
+            }
+        }
+
+        // 🔄 KARAKTER SAYACI
+        function updateCounter() {
+            const textarea = document.getElementById('tweetInput');
+            const counter = document.getElementById('charCount');
+            const counterDiv = document.getElementById('charCounter');
+            
+            const length = textarea.value.length;
+            counter.textContent = length;
+            
+            // Renk değişimi
+            counterDiv.className = 'tweet-counter';
+            if (length > 250) {
+                counterDiv.classList.add('near-limit');
+            }
+            if (length > 280) {
+                counterDiv.classList.add('over-limit');
+            }
+        }
+
+        // 🐦 TWEET GÖNDER
+        async function sendTweet() {
+            const text = document.getElementById('tweetInput').value.trim();
+            
+            if (!text) {
+                showMessage('Tweet içeriği boş olamaz!', 'error');
+                return;
+            }
+            
+            if (text.length > 280) {
+                showMessage('Tweet 280 karakteri geçemez!', 'error');
+                return;
+            }
+            
+            if (dailyTweetCount >= 5) {
+                showMessage('Günlük tweet limitiniz doldu!', 'error');
+                return;
+            }
+            
+            const button = document.getElementById('tweetButton');
+            button.disabled = true;
+            button.textContent = 'Gönderiliyor...';
+            
+            try {
+                // UTC zaman hesaplamaları
+                const now = new Date();
+                const expiresAt = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
+                
+                // Tweet verisi
+                const tweetData = {
+                    userId: currentUser.uid,
+                    text: text,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    expiresAt: expiresAt,
+                    likes: 0,
+                    retweets: 0,
+                    dailyCount: dailyTweetCount + 1,
+                    hashtags: extractHashtags(text)
+                };
+                
+                // Firestore'a kaydet
+                const docRef = await db.collection('tweets').add(tweetData);
+                
+                // Kullanıcı istatistiklerini güncelle
+                await db.collection('users').doc(currentUser.uid).update({
+                    tweetCount: firebase.firestore.FieldValue.increment(1),
+                    lastTweetAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // UI'ı temizle ve güncelle
+                document.getElementById('tweetInput').value = '';
+                updateCounter();
+                dailyTweetCount++;
+                await checkDailyLimit();
+                
+                showMessage('Tweet başarıyla gönderildi!', 'success');
+                
+                // Yeni tweet'i listeye ekle (gerçek zamanlı dinleyici zaten ekleyecek)
+                
+            } catch (error) {
+                console.error('Tweet gönderme hatası:', error);
+                showMessage('Tweet gönderilirken hata oluştu: ' + error.message, 'error');
+            }
+            
+            button.disabled = false;
+            button.textContent = '🐦 Tweet Gönder';
+        }
+
+        // 📝 HASHTAG ÇIKAR
+        function extractHashtags(text) {
+            const hashtags = text.match(/#[\w\u0590-\u05ff]+/g);
+            return hashtags ? hashtags.map(tag => tag.toLowerCase()) : [];
+        }
+
+        // 🗂️ TWEET'LERİ YÜKLE
+        async function loadTweets() {
+            const tweetList = document.getElementById('tweetList');
+            tweetList.innerHTML = '<div class="loading">Tweetler yükleniyor...</div>';
+            
+            try {
+                // Son 50 tweet'i al (sadece 30 gün içindekiler)
+                const oneMonthAgo = new Date();
+                oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
+                
+                const querySnapshot = await db.collection('tweets')
+                    .where('createdAt', '>', oneMonthAgo)
+                    .orderBy('createdAt', 'desc')
+                    .limit(50)
+                    .get();
+                
+                if (querySnapshot.empty) {
+                    tweetList.innerHTML = '<div class="tweet">Henüz tweet yok. İlk tweet\'i sen gönder!</div>';
+                    return;
+                }
+                
+                tweetList.innerHTML = '';
+                
+                querySnapshot.forEach(async (doc) => {
+                    const tweet = { id: doc.id, ...doc.data() };
+                    await renderTweet(tweet, tweetList);
+                });
+                
+            } catch (error) {
+                console.error('Tweet yükleme hatası:', error);
+                tweetList.innerHTML = '<div class="error-message">Tweetler yüklenirken hata oluştu</div>';
+            }
+        }
+
+        // 🎨 TWEET RENDER
+        async function renderTweet(tweet, container) {
+            // Kullanıcı bilgilerini al
+            let userName = 'Kullanıcı';
+            let userColor = '#1da1f2';
+            
+            try {
+                const userDoc = await db.collection('users').doc(tweet.userId).get();
+                if (userDoc.exists) {
+                    userName = userDoc.data().name.split(' ')[0];
+                    // Avatar rengi için hash
+                    userColor = stringToColor(userDoc.data().name);
+                }
+            } catch (error) {
+                console.error('Kullanıcı bilgisi alınamadı:', error);
+            }
+            
+            // Zaman formatı
+            const timeAgo = formatTimeAgo(tweet.createdAt?.toDate());
+            
+            // Kalan gün
+            const expiresAt = tweet.expiresAt?.toDate ? tweet.expiresAt.toDate() : new Date(tweet.expiresAt);
+            const daysLeft = Math.ceil((expiresAt - new Date()) / (1000 * 60 * 60 * 24));
+            
+            // Tweet HTML'i
+            const tweetElement = document.createElement('div');
+            tweetElement.className = 'tweet';
+            tweetElement.id = `tweet-${tweet.id}`;
+            
+            tweetElement.innerHTML = `
+                <div class="tweet-header">
+                    <div class="tweet-avatar" style="background: ${userColor}">
+                        ${userName.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                        <span class="tweet-user">${userName}</span>
+                        <span class="tweet-time">• ${timeAgo}</span>
+                    </div>
+                </div>
+                <div class="tweet-content">${formatTweetText(tweet.text)}</div>
+                <div class="tweet-actions">
+                    <div class="tweet-action" onclick="likeTweet('${tweet.id}')">
+                        <span id="likeIcon-${tweet.id}">🤍</span>
+                        <span id="likeCount-${tweet.id}">${tweet.likes || 0}</span>
+                    </div>
+                    <div class="tweet-action" onclick="retweet('${tweet.id}')">
+                        <span>🔄</span>
+                        <span>${tweet.retweets || 0}</span>
+                    </div>
+                </div>
+                <div class="expiry-timer ${daysLeft <= 3 ? 'danger' : ''}">
+                    ⏳ ${daysLeft > 0 ? `${daysLeft} gün sonra silinecek` : 'Bugün silinecek'}
+                </div>
+            `;
+            
+            container.appendChild(tweetElement);
+            
+            // Like durumunu kontrol et
+            checkLikeStatus(tweet.id);
+        }
+
+        // ⏰ ZAMAN FORMATI
+        function formatTimeAgo(date) {
+            if (!date) return 'bir süre önce';
+            
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return 'şimdi';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)} dk`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)} sa`;
+            return `${Math.floor(seconds / 86400)} gün`;
+        }
+
+        // 🌈 STRING'DEN RENK
+        function stringToColor(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const colors = ['#1da1f2', '#17bf63', '#e0245e', '#794bc4', '#f45d22', '#ffad1f'];
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        // 🔤 TWEET METNİ FORMATLA
+        function formatTweetText(text) {
+            // Hashtag'leri link yap
+            let formatted = text.replace(/#(\w+)/g, '<span style="color: #1da1f2;">#$1</span>');
+            // URL'leri link yap
+            formatted = formatted.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: #1da1f2;">$1</a>');
+            return formatted;
+        }
+
+        // ❤️ LIKE SİSTEMİ
+        async function likeTweet(tweetId) {
+            if (!currentUser) return;
+            
+            try {
+                const likeRef = db.collection('likes').doc(`${currentUser.uid}_${tweetId}`);
+                const likeDoc = await likeRef.get();
+                
+                if (likeDoc.exists) {
+                    // Unlike
+                    await likeRef.delete();
+                    await db.collection('tweets').doc(tweetId).update({
+                        likes: firebase.firestore.FieldValue.increment(-1)
+                    });
+                    
+                    document.getElementById(`likeIcon-${tweetId}`).textContent = '🤍';
+                } else {
+                    // Like
+                    await likeRef.set({
+                        userId: currentUser.uid,
+                        tweetId: tweetId,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    await db.collection('tweets').doc(tweetId).update({
+                        likes: firebase.firestore.FieldValue.increment(1)
+                    });
+                    
+                    document.getElementById(`likeIcon-${tweetId}`).textContent = '❤️';
+                }
+                
+                // Like sayısını güncelle
+                const tweetDoc = await db.collection('tweets').doc(tweetId).get();
+                const likes = tweetDoc.data().likes || 0;
+                document.getElementById(`likeCount-${tweetId}`).textContent = likes;
+                
+            } catch (error) {
+                console.error('Like hatası:', error);
+            }
+        }
+
+        // 👍 LIKE DURUMU KONTROL
+        async function checkLikeStatus(tweetId) {
+            if (!currentUser) return;
+            
+            try {
+                const likeDoc = await db.collection('likes')
+                    .doc(`${currentUser.uid}_${tweetId}`)
+                    .get();
+                
+                if (likeDoc.exists) {
+                    document.getElementById(`likeIcon-${tweetId}`).textContent = '❤️';
+                }
+            } catch (error) {
+                console.error('Like durumu kontrol hatası:', error);
+            }
+        }
+
+        // 🔄 RETWEET
+        async function retweet(tweetId) {
+            showMessage('Retweet özelliği yakında eklenecek!', 'success');
+            // İleride eklenecek
+        }
+
+        // 📡 GERÇEK ZAMANLI DİNLEYİCİ
+        function setupRealtimeListener() {
+            // Son 30 günün tweet'lerini dinle
+            const oneMonthAgo = new Date();
+            oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
+            
+            db.collection('tweets')
+                .where('createdAt', '>', oneMonthAgo)
+                .orderBy('createdAt', 'desc')
+                .limit(50)
+                .onSnapshot((snapshot) => {
+                    snapshot.docChanges().forEach(async (change) => {
+                        if (change.type === 'added') {
+                            // Yeni tweet eklendi
+                            const tweet = { id: change.doc.id, ...change.doc.data() };
+                            const container = document.getElementById('tweetList');
+                            
+                            // Zaten var mı kontrol et
+                            if (!document.getElementById(`tweet-${tweet.id}`)) {
+                                await renderTweet(tweet, container);
+                                // En üste ekle
+                                container.prepend(container.lastChild);
+                            }
+                        }
+                        
+                        if (change.type === 'modified') {
+                            // Tweet güncellendi (like sayısı vb.)
+                            const tweet = change.doc.data();
+                            const likeCount = tweet.likes || 0;
+                            const element = document.getElementById(`likeCount-${change.doc.id}`);
+                            if (element) {
+                                element.textContent = likeCount;
+                            }
+                        }
+                        
+                        if (change.type === 'removed') {
+                            // Tweet silindi
+                            const element = document.getElementById(`tweet-${change.doc.id}`);
+                            if (element) {
+                                element.remove();
+                            }
+                        }
+                    });
+                });
+        }
+
+        // 💬 MESAJ GÖSTER
+        function showMessage(text, type) {
+            const container = document.getElementById('messageContainer');
+            const message = document.createElement('div');
+            message.className = type === 'error' ? 'error-message' : 'success-message';
+            message.textContent = text;
+            
+            container.appendChild(message);
+            
+            // 3 saniye sonra sil
+            setTimeout(() => {
+                message.remove();
+            }, 3000);
+        }
+
+        // 🚪 ÇIKIŞ
+        function logout() {
+            document.getElementById('logoutModal').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('logoutModal').style.display = 'none';
+        }
+        
+        async function confirmLogout() {
+            try {
+                await auth.signOut();
+                sessionStorage.removeItem('userLoggedIn');
+                window.location.href = 'https://methehan.github.io/login/';
+            } catch (error) {
+                console.error('Çıkış hatası:', error);
+            }
+        }
+    </script>
+</body>
+</html>
